@@ -2142,170 +2142,526 @@
         pointLight2.position.set(4, 2, -2);
         chairScene.add(pointLight2);
 
-        // Materials - Realistic Gaming Chair Colors
+        // Materials - Ultra Realistic Gaming Chair with PBR-like properties
         const chairTheme = document.documentElement.getAttribute('data-theme');
-        // Main chair body - black leather look
-        const chairMaterial = new THREE.MeshStandardMaterial({
+
+        // Premium leather material - realistic black leather with subtle sheen
+        const leatherMaterial = new THREE.MeshStandardMaterial({
             color: 0x1a1a1a,
-            metalness: 0.1,
-            roughness: 0.4
+            metalness: 0.0,
+            roughness: 0.55,
+            envMapIntensity: 0.5
         });
-        // Racing stripes / accent color - red for gaming aesthetic
-        const accentMaterial = new THREE.MeshStandardMaterial({
-            color: 0xdc2626,
-            metalness: 0.2,
+
+        // Soft leather for cushions - slightly different finish
+        const softLeatherMaterial = new THREE.MeshStandardMaterial({
+            color: 0x151515,
+            metalness: 0.0,
+            roughness: 0.7
+        });
+
+        // Accent leather - red premium leather
+        const accentLeatherMaterial = new THREE.MeshStandardMaterial({
+            color: 0xb91c1c,
+            metalness: 0.0,
             roughness: 0.5
         });
-        // Chrome/polished metal for base and frame
-        const metalMaterial = new THREE.MeshStandardMaterial({
-            color: 0xc0c0c0,
+
+        // Stitching material - contrast thread
+        const stitchMaterial = new THREE.MeshStandardMaterial({
+            color: 0xdc2626,
+            metalness: 0.1,
+            roughness: 0.8
+        });
+
+        // Brushed aluminum for frame
+        const brushedAluminumMaterial = new THREE.MeshStandardMaterial({
+            color: 0x8a8a8a,
+            metalness: 0.85,
+            roughness: 0.35
+        });
+
+        // Polished chrome for base
+        const chromeMaterial = new THREE.MeshStandardMaterial({
+            color: 0xe8e8e8,
             metalness: 0.95,
-            roughness: 0.1
+            roughness: 0.05
         });
-        // Black plastic for wheels
-        const plasticMaterial = new THREE.MeshStandardMaterial({
-            color: 0x2a2a2a,
+
+        // High quality plastic
+        const qualityPlasticMaterial = new THREE.MeshStandardMaterial({
+            color: 0x1f1f1f,
             metalness: 0.0,
-            roughness: 0.6
+            roughness: 0.4
         });
+
+        // Rubber for wheels
+        const rubberMaterial = new THREE.MeshStandardMaterial({
+            color: 0x2d2d2d,
+            metalness: 0.0,
+            roughness: 0.9
+        });
+
         // Person materials
         const skinMaterial = new THREE.MeshStandardMaterial({ color: 0x8d5524, metalness: 0.1, roughness: 0.8 });
         const shirtMaterial = new THREE.MeshStandardMaterial({ color: 0x1e40af, metalness: 0.1, roughness: 0.6 });
         const pantsMaterial = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.1, roughness: 0.7 });
         const hairMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.2, roughness: 0.8 });
         const shoeMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.3, roughness: 0.5 });
-        // Cushion - black with subtle texture
-        const cushionMaterial = new THREE.MeshStandardMaterial({
-            color: 0x0f0f0f,
-            metalness: 0.05,
-            roughness: 0.7
-        });
 
         const chairGroup = new THREE.Group();
 
-        // ===== REALISTIC GAMING CHAIR =====
+        // ===== ULTRA REALISTIC GAMING CHAIR =====
 
-        // Seat base (bucket seat style)
-        const seatGeom = new THREE.BoxGeometry(1.9, 0.25, 1.9);
-        const seat = new THREE.Mesh(seatGeom, chairMaterial);
-        seat.position.y = 1.15;
-        seat.castShadow = true;
-        chairGroup.add(seat);
+        // Helper function to create rounded box (simulates real furniture edges)
+        function createRoundedBox(width, height, depth, radius, smoothness) {
+            const shape = new THREE.Shape();
+            const eps = 0.00001;
+            const r = radius - eps;
 
-        // Seat cushion with contour
-        const cushion = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.18, 1.65), cushionMaterial);
-        cushion.position.y = 1.34;
-        cushion.castShadow = true;
-        chairGroup.add(cushion);
+            shape.absarc(eps, eps, eps, -Math.PI / 2, -Math.PI, true);
+            shape.absarc(eps, height - r * 2, eps, Math.PI, Math.PI / 2, true);
+            shape.absarc(width - r * 2, height - r * 2, eps, Math.PI / 2, 0, true);
+            shape.absarc(width - r * 2, eps, eps, 0, -Math.PI / 2, true);
 
-        // Seat side bolsters (racing style)
-        const leftBolster = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.3, 1.5), chairMaterial);
-        leftBolster.position.set(-0.85, 1.35, -0.1);
-        chairGroup.add(leftBolster);
-        const rightBolster = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.3, 1.5), chairMaterial);
-        rightBolster.position.set(0.85, 1.35, -0.1);
-        chairGroup.add(rightBolster);
+            const geometry = new THREE.ExtrudeGeometry(shape, {
+                depth: depth - radius * 2,
+                bevelEnabled: true,
+                bevelSegments: smoothness,
+                steps: 1,
+                bevelSize: radius,
+                bevelThickness: radius
+            });
+            geometry.center();
+            return geometry;
+        }
 
-        // Backrest frame
-        const backrest = new THREE.Mesh(new THREE.BoxGeometry(1.9, 2.4, 0.25), chairMaterial);
-        backrest.position.set(0, 2.5, -0.85);
-        backrest.rotation.x = 0.08;
-        backrest.castShadow = true;
-        chairGroup.add(backrest);
+        // === SEAT BASE FRAME (structural) ===
+        const seatFrame = new THREE.Mesh(
+            new THREE.BoxGeometry(1.8, 0.12, 1.8),
+            qualityPlasticMaterial
+        );
+        seatFrame.position.y = 1.08;
+        seatFrame.castShadow = true;
+        chairGroup.add(seatFrame);
 
-        // Backrest cushion
-        const backCushion = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.0, 0.18), cushionMaterial);
-        backCushion.position.set(0, 2.4, -0.68);
-        backCushion.rotation.x = 0.08;
-        chairGroup.add(backCushion);
+        // === SEAT CUSHION (multi-layer for realism) ===
+        // Main seat cushion - slightly curved top
+        const seatCushionGeom = new THREE.BoxGeometry(1.6, 0.22, 1.55);
+        const seatCushion = new THREE.Mesh(seatCushionGeom, softLeatherMaterial);
+        seatCushion.position.set(0, 1.28, 0.05);
+        seatCushion.castShadow = true;
+        chairGroup.add(seatCushion);
 
-        // Red racing stripes on backrest
-        const stripe1 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 1.8, 0.19), accentMaterial);
-        stripe1.position.set(-0.45, 2.4, -0.67);
-        stripe1.rotation.x = 0.08;
-        chairGroup.add(stripe1);
-        const stripe2 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 1.8, 0.19), accentMaterial);
-        stripe2.position.set(0.45, 2.4, -0.67);
-        stripe2.rotation.x = 0.08;
-        chairGroup.add(stripe2);
+        // Seat cushion top padding (rounded appearance)
+        const seatPadTop = new THREE.Mesh(
+            new THREE.SphereGeometry(0.85, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.15),
+            softLeatherMaterial
+        );
+        seatPadTop.position.set(0, 1.32, 0.05);
+        seatPadTop.scale.set(0.95, 0.3, 0.9);
+        chairGroup.add(seatPadTop);
 
-        // Shoulder wings (racing bucket style)
-        const leftWing = new THREE.Mesh(new THREE.BoxGeometry(0.25, 1.2, 0.5), chairMaterial);
-        leftWing.position.set(-0.95, 2.8, -0.65);
-        leftWing.rotation.x = 0.08;
-        leftWing.rotation.z = 0.15;
-        chairGroup.add(leftWing);
-        const rightWing = new THREE.Mesh(new THREE.BoxGeometry(0.25, 1.2, 0.5), chairMaterial);
-        rightWing.position.set(0.95, 2.8, -0.65);
-        rightWing.rotation.x = 0.08;
-        rightWing.rotation.z = -0.15;
-        chairGroup.add(rightWing);
+        // Seat stitching lines (horizontal)
+        for (let i = -1; i <= 1; i++) {
+            const stitch = new THREE.Mesh(
+                new THREE.BoxGeometry(1.4, 0.015, 0.02),
+                stitchMaterial
+            );
+            stitch.position.set(0, 1.395, i * 0.4);
+            chairGroup.add(stitch);
+        }
 
-        // Headrest pillow
-        const headrest = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.35, 0.2), cushionMaterial);
-        headrest.position.set(0, 3.65, -0.6);
-        headrest.rotation.x = 0.08;
-        chairGroup.add(headrest);
-        // Headrest accent stripe
-        const headStripe = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.08, 0.21), accentMaterial);
-        headStripe.position.set(0, 3.55, -0.59);
-        headStripe.rotation.x = 0.08;
-        chairGroup.add(headStripe);
+        // === SIDE BOLSTERS (ergonomic racing style) ===
+        // Left bolster - curved shape
+        const leftBolsterMain = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.18, 0.22, 1.4, 16, 1, false, 0, Math.PI),
+            leatherMaterial
+        );
+        leftBolsterMain.position.set(-0.75, 1.35, -0.05);
+        leftBolsterMain.rotation.x = Math.PI / 2;
+        leftBolsterMain.rotation.z = Math.PI / 2;
+        chairGroup.add(leftBolsterMain);
 
-        // Lumbar support pillow
-        const lumbar = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.3, 0.15), cushionMaterial);
-        lumbar.position.set(0, 1.9, -0.55);
-        lumbar.rotation.x = 0.08;
-        chairGroup.add(lumbar);
+        const leftBolsterCap = new THREE.Mesh(
+            new THREE.SphereGeometry(0.18, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2),
+            leatherMaterial
+        );
+        leftBolsterCap.position.set(-0.75, 1.35, 0.65);
+        leftBolsterCap.rotation.x = -Math.PI / 2;
+        chairGroup.add(leftBolsterCap);
 
-        // Armrests with padding
-        const leftArmBase = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.5, 0.12), metalMaterial);
-        leftArmBase.position.set(-0.9, 1.45, 0.1);
-        chairGroup.add(leftArmBase);
-        const leftArmrest = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.08, 0.5), cushionMaterial);
-        leftArmrest.position.set(-0.9, 1.72, 0.0);
-        chairGroup.add(leftArmrest);
+        // Right bolster
+        const rightBolsterMain = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.18, 0.22, 1.4, 16, 1, false, 0, Math.PI),
+            leatherMaterial
+        );
+        rightBolsterMain.position.set(0.75, 1.35, -0.05);
+        rightBolsterMain.rotation.x = Math.PI / 2;
+        rightBolsterMain.rotation.z = -Math.PI / 2;
+        chairGroup.add(rightBolsterMain);
 
-        const rightArmBase = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.5, 0.12), metalMaterial);
-        rightArmBase.position.set(0.9, 1.45, 0.1);
-        chairGroup.add(rightArmBase);
-        const rightArmrest = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.08, 0.5), cushionMaterial);
-        rightArmrest.position.set(0.9, 1.72, 0.0);
-        chairGroup.add(rightArmrest);
+        const rightBolsterCap = new THREE.Mesh(
+            new THREE.SphereGeometry(0.18, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2),
+            leatherMaterial
+        );
+        rightBolsterCap.position.set(0.75, 1.35, 0.65);
+        rightBolsterCap.rotation.x = -Math.PI / 2;
+        chairGroup.add(rightBolsterCap);
 
-        // Gas lift cylinder
-        const gasLift = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.5, 16), metalMaterial);
-        gasLift.position.y = 0.85;
-        chairGroup.add(gasLift);
-        const gasLiftCover = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.1, 0.3, 16), plasticMaterial);
-        gasLiftCover.position.y = 0.7;
-        chairGroup.add(gasLiftCover);
+        // === BACKREST (tall racing bucket style) ===
+        // Main backrest frame
+        const backrestFrame = new THREE.Mesh(
+            new THREE.BoxGeometry(1.75, 2.3, 0.18),
+            qualityPlasticMaterial
+        );
+        backrestFrame.position.set(0, 2.5, -0.88);
+        backrestFrame.rotation.x = 0.1;
+        backrestFrame.castShadow = true;
+        chairGroup.add(backrestFrame);
 
-        // 5-star base (chrome)
-        const baseHub = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.1, 16), metalMaterial);
-        baseHub.position.y = 0.35;
-        chairGroup.add(baseHub);
+        // Backrest main cushion
+        const backrestCushion = new THREE.Mesh(
+            new THREE.BoxGeometry(1.45, 1.9, 0.2),
+            softLeatherMaterial
+        );
+        backrestCushion.position.set(0, 2.35, -0.7);
+        backrestCushion.rotation.x = 0.1;
+        chairGroup.add(backrestCushion);
 
-        // Base legs and caster wheels
+        // Backrest padding bulge (realistic cushion effect)
+        const backPadBulge = new THREE.Mesh(
+            new THREE.SphereGeometry(0.8, 32, 32),
+            softLeatherMaterial
+        );
+        backPadBulge.position.set(0, 2.3, -0.55);
+        backPadBulge.scale.set(0.9, 1.2, 0.12);
+        backPadBulge.rotation.x = 0.1;
+        chairGroup.add(backPadBulge);
+
+        // Vertical stitching on backrest
+        for (let i = -1; i <= 1; i += 2) {
+            const vStitch = new THREE.Mesh(
+                new THREE.BoxGeometry(0.015, 1.6, 0.02),
+                stitchMaterial
+            );
+            vStitch.position.set(i * 0.35, 2.35, -0.58);
+            vStitch.rotation.x = 0.1;
+            chairGroup.add(vStitch);
+        }
+
+        // Red accent stripes (premium leather inserts)
+        const accentStripe1 = new THREE.Mesh(
+            new THREE.BoxGeometry(0.12, 1.7, 0.21),
+            accentLeatherMaterial
+        );
+        accentStripe1.position.set(-0.5, 2.4, -0.69);
+        accentStripe1.rotation.x = 0.1;
+        chairGroup.add(accentStripe1);
+
+        const accentStripe2 = new THREE.Mesh(
+            new THREE.BoxGeometry(0.12, 1.7, 0.21),
+            accentLeatherMaterial
+        );
+        accentStripe2.position.set(0.5, 2.4, -0.69);
+        accentStripe2.rotation.x = 0.1;
+        chairGroup.add(accentStripe2);
+
+        // === SHOULDER WINGS (wraparound bucket style) ===
+        // Left wing - curved ergonomic shape
+        const leftWingMain = new THREE.Mesh(
+            new THREE.BoxGeometry(0.22, 1.1, 0.45),
+            leatherMaterial
+        );
+        leftWingMain.position.set(-0.88, 2.85, -0.68);
+        leftWingMain.rotation.x = 0.1;
+        leftWingMain.rotation.z = 0.12;
+        chairGroup.add(leftWingMain);
+
+        // Left wing inner curve
+        const leftWingCurve = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.15, 0.15, 1.0, 16, 1, false, Math.PI * 0.5, Math.PI),
+            leatherMaterial
+        );
+        leftWingCurve.position.set(-0.78, 2.85, -0.5);
+        leftWingCurve.rotation.x = 0.1;
+        chairGroup.add(leftWingCurve);
+
+        // Right wing
+        const rightWingMain = new THREE.Mesh(
+            new THREE.BoxGeometry(0.22, 1.1, 0.45),
+            leatherMaterial
+        );
+        rightWingMain.position.set(0.88, 2.85, -0.68);
+        rightWingMain.rotation.x = 0.1;
+        rightWingMain.rotation.z = -0.12;
+        chairGroup.add(rightWingMain);
+
+        const rightWingCurve = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.15, 0.15, 1.0, 16, 1, false, -Math.PI * 0.5, Math.PI),
+            leatherMaterial
+        );
+        rightWingCurve.position.set(0.78, 2.85, -0.5);
+        rightWingCurve.rotation.x = 0.1;
+        chairGroup.add(rightWingCurve);
+
+        // === HEADREST PILLOW (detachable style with straps) ===
+        // Main headrest cushion
+        const headrestMain = new THREE.Mesh(
+            new THREE.BoxGeometry(0.6, 0.28, 0.18),
+            softLeatherMaterial
+        );
+        headrestMain.position.set(0, 3.62, -0.55);
+        headrestMain.rotation.x = 0.1;
+        chairGroup.add(headrestMain);
+
+        // Headrest rounded edges
+        const headrestTop = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.09, 0.09, 0.6, 16),
+            softLeatherMaterial
+        );
+        headrestTop.position.set(0, 3.76, -0.55);
+        headrestTop.rotation.z = Math.PI / 2;
+        headrestTop.rotation.y = 0.1;
+        chairGroup.add(headrestTop);
+
+        const headrestBottom = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.09, 0.09, 0.6, 16),
+            softLeatherMaterial
+        );
+        headrestBottom.position.set(0, 3.48, -0.55);
+        headrestBottom.rotation.z = Math.PI / 2;
+        headrestBottom.rotation.y = 0.1;
+        chairGroup.add(headrestBottom);
+
+        // Headrest strap (elastic band)
+        const headrestStrap = new THREE.Mesh(
+            new THREE.BoxGeometry(0.08, 0.5, 0.03),
+            qualityPlasticMaterial
+        );
+        headrestStrap.position.set(0, 3.4, -0.7);
+        headrestStrap.rotation.x = 0.1;
+        chairGroup.add(headrestStrap);
+
+        // Red accent on headrest
+        const headrestAccent = new THREE.Mesh(
+            new THREE.BoxGeometry(0.4, 0.06, 0.19),
+            accentLeatherMaterial
+        );
+        headrestAccent.position.set(0, 3.55, -0.54);
+        headrestAccent.rotation.x = 0.1;
+        chairGroup.add(headrestAccent);
+
+        // === LUMBAR SUPPORT PILLOW ===
+        const lumbarMain = new THREE.Mesh(
+            new THREE.BoxGeometry(0.5, 0.25, 0.12),
+            softLeatherMaterial
+        );
+        lumbarMain.position.set(0, 1.85, -0.52);
+        lumbarMain.rotation.x = 0.1;
+        chairGroup.add(lumbarMain);
+
+        // Lumbar pillow bulge
+        const lumbarBulge = new THREE.Mesh(
+            new THREE.SphereGeometry(0.2, 16, 16),
+            softLeatherMaterial
+        );
+        lumbarBulge.position.set(0, 1.85, -0.42);
+        lumbarBulge.scale.set(1.2, 0.6, 0.4);
+        chairGroup.add(lumbarBulge);
+
+        // Lumbar strap
+        const lumbarStrap = new THREE.Mesh(
+            new THREE.BoxGeometry(0.06, 0.4, 0.02),
+            qualityPlasticMaterial
+        );
+        lumbarStrap.position.set(0, 1.65, -0.65);
+        lumbarStrap.rotation.x = 0.1;
+        chairGroup.add(lumbarStrap);
+
+        // === 4D ARMRESTS (adjustable style) ===
+        // Left armrest assembly
+        const leftArmBracket = new THREE.Mesh(
+            new THREE.BoxGeometry(0.08, 0.45, 0.08),
+            brushedAluminumMaterial
+        );
+        leftArmBracket.position.set(-0.85, 1.42, 0.1);
+        chairGroup.add(leftArmBracket);
+
+        const leftArmPlate = new THREE.Mesh(
+            new THREE.BoxGeometry(0.12, 0.04, 0.35),
+            brushedAluminumMaterial
+        );
+        leftArmPlate.position.set(-0.85, 1.66, 0.05);
+        chairGroup.add(leftArmPlate);
+
+        const leftArmPad = new THREE.Mesh(
+            new THREE.BoxGeometry(0.14, 0.06, 0.4),
+            softLeatherMaterial
+        );
+        leftArmPad.position.set(-0.85, 1.71, 0.02);
+        chairGroup.add(leftArmPad);
+
+        // Left armpad rounded edges
+        const leftArmPadFront = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.03, 0.03, 0.14, 12),
+            softLeatherMaterial
+        );
+        leftArmPadFront.position.set(-0.85, 1.71, 0.22);
+        leftArmPadFront.rotation.z = Math.PI / 2;
+        chairGroup.add(leftArmPadFront);
+
+        // Right armrest assembly
+        const rightArmBracket = new THREE.Mesh(
+            new THREE.BoxGeometry(0.08, 0.45, 0.08),
+            brushedAluminumMaterial
+        );
+        rightArmBracket.position.set(0.85, 1.42, 0.1);
+        chairGroup.add(rightArmBracket);
+
+        const rightArmPlate = new THREE.Mesh(
+            new THREE.BoxGeometry(0.12, 0.04, 0.35),
+            brushedAluminumMaterial
+        );
+        rightArmPlate.position.set(0.85, 1.66, 0.05);
+        chairGroup.add(rightArmPlate);
+
+        const rightArmPad = new THREE.Mesh(
+            new THREE.BoxGeometry(0.14, 0.06, 0.4),
+            softLeatherMaterial
+        );
+        rightArmPad.position.set(0.85, 1.71, 0.02);
+        chairGroup.add(rightArmPad);
+
+        const rightArmPadFront = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.03, 0.03, 0.14, 12),
+            softLeatherMaterial
+        );
+        rightArmPadFront.position.set(0.85, 1.71, 0.22);
+        rightArmPadFront.rotation.z = Math.PI / 2;
+        chairGroup.add(rightArmPadFront);
+
+        // === GAS LIFT MECHANISM (detailed) ===
+        // Upper gas lift cover
+        const gasLiftTop = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.1, 0.12, 0.15, 24),
+            qualityPlasticMaterial
+        );
+        gasLiftTop.position.y = 0.98;
+        chairGroup.add(gasLiftTop);
+
+        // Main gas lift cylinder (chrome)
+        const gasLiftCylinder = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.06, 0.06, 0.45, 24),
+            chromeMaterial
+        );
+        gasLiftCylinder.position.y = 0.72;
+        chairGroup.add(gasLiftCylinder);
+
+        // Gas lift base cover
+        const gasLiftBase = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.14, 0.1, 0.12, 24),
+            qualityPlasticMaterial
+        );
+        gasLiftBase.position.y = 0.44;
+        chairGroup.add(gasLiftBase);
+
+        // === 5-STAR BASE (premium chrome with details) ===
+        // Center hub
+        const baseHubTop = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.16, 0.18, 0.06, 32),
+            chromeMaterial
+        );
+        baseHubTop.position.y = 0.35;
+        chairGroup.add(baseHubTop);
+
+        const baseHubBottom = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.2, 0.16, 0.04, 32),
+            chromeMaterial
+        );
+        baseHubBottom.position.y = 0.3;
+        chairGroup.add(baseHubBottom);
+
+        // Base legs with casters (premium design)
         for (let i = 0; i < 5; i++) {
             const angle = (i / 5) * Math.PI * 2;
-            // Chrome leg
-            const leg = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.06, 0.85), metalMaterial);
-            leg.position.set(Math.sin(angle) * 0.42, 0.32, Math.cos(angle) * 0.42);
-            leg.rotation.y = -angle;
-            chairGroup.add(leg);
+            const legLength = 0.75;
 
-            // Caster housing
-            const casterHousing = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.12, 12), plasticMaterial);
-            casterHousing.position.set(Math.sin(angle) * 0.78, 0.18, Math.cos(angle) * 0.78);
-            chairGroup.add(casterHousing);
+            // Chrome leg - tapered design
+            const legMain = new THREE.Mesh(
+                new THREE.BoxGeometry(0.065, 0.045, legLength),
+                chromeMaterial
+            );
+            legMain.position.set(
+                Math.sin(angle) * (legLength / 2 + 0.1),
+                0.31,
+                Math.cos(angle) * (legLength / 2 + 0.1)
+            );
+            legMain.rotation.y = -angle;
+            chairGroup.add(legMain);
 
-            // Wheel
-            const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.06, 16), plasticMaterial);
-            wheel.position.set(Math.sin(angle) * 0.78, 0.09, Math.cos(angle) * 0.78);
-            wheel.rotation.z = Math.PI / 2;
-            wheel.rotation.y = angle;
-            chairGroup.add(wheel);
+            // Leg reinforcement rib
+            const legRib = new THREE.Mesh(
+                new THREE.BoxGeometry(0.03, 0.06, legLength - 0.1),
+                chromeMaterial
+            );
+            legRib.position.set(
+                Math.sin(angle) * (legLength / 2 + 0.1),
+                0.28,
+                Math.cos(angle) * (legLength / 2 + 0.1)
+            );
+            legRib.rotation.y = -angle;
+            chairGroup.add(legRib);
+
+            // Caster fork (holds the wheel)
+            const casterFork = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.055, 0.065, 0.14, 16),
+                qualityPlasticMaterial
+            );
+            casterFork.position.set(
+                Math.sin(angle) * 0.82,
+                0.21,
+                Math.cos(angle) * 0.82
+            );
+            chairGroup.add(casterFork);
+
+            // Caster swivel bearing
+            const casterBearing = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.04, 0.04, 0.03, 16),
+                chromeMaterial
+            );
+            casterBearing.position.set(
+                Math.sin(angle) * 0.82,
+                0.13,
+                Math.cos(angle) * 0.82
+            );
+            chairGroup.add(casterBearing);
+
+            // Wheel (rubber with chrome hub)
+            const wheelHub = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.035, 0.035, 0.055, 16),
+                chromeMaterial
+            );
+            wheelHub.position.set(
+                Math.sin(angle) * 0.82,
+                0.07,
+                Math.cos(angle) * 0.82
+            );
+            wheelHub.rotation.z = Math.PI / 2;
+            wheelHub.rotation.y = angle;
+            chairGroup.add(wheelHub);
+
+            const wheelRubber = new THREE.Mesh(
+                new THREE.TorusGeometry(0.055, 0.025, 12, 24),
+                rubberMaterial
+            );
+            wheelRubber.position.set(
+                Math.sin(angle) * 0.82,
+                0.07,
+                Math.cos(angle) * 0.82
+            );
+            wheelRubber.rotation.y = angle + Math.PI / 2;
+            chairGroup.add(wheelRubber);
         }
 
         // ===== REALISTIC HUMAN FIGURE WITH HOODIE =====
