@@ -2661,10 +2661,10 @@
             chairGroup.add(symbol);
         }
 
-        chairGroup.position.y = -1.5;
+        chairGroup.position.y = -0.8;
         chairScene.add(chairGroup);
-        chairCamera.position.set(0, 2.2, 4.2);
-        chairCamera.lookAt(0, 1.8, 0);
+        chairCamera.position.set(0, 1.5, 4.5);
+        chairCamera.lookAt(0, 1.2, 0);
 
         // Drag controls - 360 horizontal + up/down vertical rotation
         let isDragging = false;
@@ -2752,7 +2752,7 @@
             currentPitch += (targetPitch - currentPitch) * 0.1;
             chairGroup.rotation.y = currentRotation;
             chairGroup.rotation.x = currentPitch;
-            chairGroup.position.y = -1.5 + Math.sin(time * 0.5) * 0.05;
+            chairGroup.position.y = -0.8 + Math.sin(time * 0.5) * 0.05;
 
             // Code symbols
             const speedMult = isHoveringChair ? 1.5 : 1;
