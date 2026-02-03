@@ -1,0 +1,2497 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eddy Madu | Senior Software Engineer</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&family=Instrument+Serif:ital@0;1&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0a0b;
+            --bg-secondary: #111113;
+            --bg-tertiary: #1a1a1d;
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --accent: #22d3ee;
+            --accent-glow: rgba(34, 211, 238, 0.3);
+            --accent-secondary: #a855f7;
+            --gradient-1: linear-gradient(135deg, #22d3ee 0%, #a855f7 100%);
+            --gradient-2: linear-gradient(135deg, #f97316 0%, #ec4899 100%);
+            --card-bg: rgba(26, 26, 29, 0.6);
+            --border-color: rgba(255, 255, 255, 0.06);
+            --shadow-color: rgba(0, 0, 0, 0.5);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #fafafa;
+            --bg-secondary: #f4f4f5;
+            --bg-tertiary: #e4e4e7;
+            --text-primary: #09090b;
+            --text-secondary: #52525b;
+            --text-muted: #a1a1aa;
+            --accent: #0891b2;
+            --accent-glow: rgba(8, 145, 178, 0.2);
+            --accent-secondary: #9333ea;
+            --card-bg: rgba(255, 255, 255, 0.8);
+            --border-color: rgba(0, 0, 0, 0.06);
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Syne', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            cursor: none;
+            transition: background 0.5s ease, color 0.5s ease;
+        }
+
+        /* Custom Cursor */
+        .cursor {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 10000;
+            transition: transform 0.15s ease, border-color 0.3s ease;
+            mix-blend-mode: difference;
+        }
+
+        .cursor-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 10001;
+            transition: transform 0.1s ease;
+        }
+
+        .cursor.hover {
+            transform: scale(2);
+            border-color: var(--accent-secondary);
+        }
+
+        /* Noise Overlay */
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+
+        /* 3D Canvas */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 1000;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1) rotate(15deg);
+            border-color: var(--accent);
+            box-shadow: 0 0 30px var(--accent-glow);
+        }
+
+        .theme-toggle svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--text-primary);
+            transition: fill 0.3s ease;
+        }
+
+        .sun-icon {
+            display: none;
+        }
+
+        .moon-icon {
+            display: block;
+        }
+
+        [data-theme="light"] .sun-icon {
+            display: block;
+        }
+
+        [data-theme="light"] .moon-icon {
+            display: none;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 2rem 6rem 2rem 4rem;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            background: linear-gradient(to bottom, var(--bg-primary), transparent);
+        }
+
+        .logo {
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.5rem;
+            font-style: italic;
+            color: var(--text-primary);
+            text-decoration: none;
+            position: relative;
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--gradient-1);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.4s ease;
+        }
+
+        .logo:hover::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 3rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-secondary);
+            text-decoration: none;
+            position: relative;
+            padding: 0.5rem 0;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a::before {
+            content: '';
+            position: absolute;
+            left: -1rem;
+            top: 50%;
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            transform: translateY(-50%) scale(0);
+            transition: transform 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-links a:hover::before {
+            transform: translateY(-50%) scale(1);
+        }
+
+        /* Sections */
+        section {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            padding: 8rem 4rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding-top: 0;
+        }
+
+        .hero-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            align-items: center;
+            width: 100%;
+            max-width: 1400px;
+        }
+
+        .hero-text {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .hero-3d {
+            position: relative;
+            width: 100%;
+            height: 550px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #chair-container {
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+            border-radius: 24px;
+            overflow: hidden;
+            background: radial-gradient(ellipse at center bottom, var(--bg-tertiary) 0%, transparent 60%);
+            position: relative;
+        }
+
+        #chair-container::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 100px;
+            background: radial-gradient(ellipse at center, rgba(220, 38, 38, 0.2) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 1;
+            animation: glowPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes glowPulse {
+
+            0%,
+            100% {
+                opacity: 0.6;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        #chair-container:active {
+            cursor: grabbing;
+        }
+
+        .drag-hint {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            animation: fadeInUp 1s ease 1.5s forwards;
+            opacity: 0;
+        }
+
+        .drag-hint svg {
+            stroke: var(--accent);
+            animation: dragHint 2s ease-in-out infinite;
+        }
+
+        @keyframes dragHint {
+
+            0%,
+            100% {
+                transform: rotate(0deg) scale(1);
+            }
+
+            25% {
+                transform: rotate(10deg) scale(1.1);
+            }
+
+            50% {
+                transform: rotate(0deg) scale(1);
+            }
+
+            75% {
+                transform: rotate(-10deg) scale(1.1);
+            }
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 100px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            margin-top: 2rem;
+            backdrop-filter: blur(10px);
+            animation: slideUp 0.8s ease forwards;
+            opacity: 0;
+        }
+
+        .hero-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(1.2);
+            }
+        }
+
+        .hero h1 {
+            font-size: clamp(3rem, 10vw, 7rem);
+            font-weight: 800;
+            line-height: 0.95;
+            letter-spacing: -0.03em;
+            margin-bottom: 2rem;
+            animation: slideUp 0.8s ease 0.1s forwards;
+            opacity: 0;
+        }
+
+        .hero h1 span {
+            display: block;
+        }
+
+        .hero h1 .accent {
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-family: 'Space Mono', monospace;
+            font-size: 1rem;
+            color: var(--text-secondary);
+            max-width: 500px;
+            line-height: 1.8;
+            margin-bottom: 3rem;
+            animation: slideUp 0.8s ease 0.2s forwards;
+            opacity: 0;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 1.5rem;
+            animation: slideUp 0.8s ease 0.3s forwards;
+            opacity: 0;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 2rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: var(--gradient-1);
+            color: #000;
+            border: none;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 30px var(--accent-glow);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Scroll Indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            animation: fadeIn 1s ease 1s forwards;
+            opacity: 0;
+        }
+
+        .scroll-indicator span {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--text-muted);
+        }
+
+        .scroll-line {
+            width: 1px;
+            height: 60px;
+            background: linear-gradient(to bottom, var(--accent), transparent);
+            animation: scrollAnim 2s ease infinite;
+        }
+
+        @keyframes scrollAnim {
+            0% {
+                transform: scaleY(0);
+                transform-origin: top;
+            }
+
+            50% {
+                transform: scaleY(1);
+                transform-origin: top;
+            }
+
+            51% {
+                transform-origin: bottom;
+            }
+
+            100% {
+                transform: scaleY(0);
+                transform-origin: bottom;
+            }
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Marquee */
+        .marquee-container {
+            overflow: hidden;
+            white-space: nowrap;
+            padding: 3rem 0;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+            z-index: 1;
+        }
+
+        .marquee {
+            display: inline-flex;
+            animation: marquee 30s linear infinite;
+        }
+
+        .marquee span {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+            padding: 0 2rem;
+            color: transparent;
+            -webkit-text-stroke: 1px var(--text-muted);
+        }
+
+        .marquee span.filled {
+            -webkit-text-stroke: none;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        @keyframes marquee {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        /* About Section */
+        .about {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6rem;
+            align-items: center;
+        }
+
+        .section-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .section-label::before {
+            content: '';
+            width: 40px;
+            height: 1px;
+            background: var(--accent);
+        }
+
+        .about-content h2 {
+            font-size: clamp(2rem, 4vw, 3.5rem);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 2rem;
+        }
+
+        .about-content p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .stat {
+            text-align: left;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        .about-visual {
+            position: relative;
+            aspect-ratio: 1;
+        }
+
+        .about-card {
+            position: absolute;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            backdrop-filter: blur(20px);
+            transition: transform 0.5s ease, box-shadow 0.5s ease;
+        }
+
+        .about-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px var(--shadow-color);
+        }
+
+        .card-1 {
+            top: 10%;
+            left: 10%;
+            width: 200px;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .card-2 {
+            top: 30%;
+            right: 5%;
+            width: 180px;
+            animation: float 6s ease-in-out 1s infinite;
+        }
+
+        .card-3 {
+            bottom: 15%;
+            left: 20%;
+            width: 220px;
+            animation: float 6s ease-in-out 2s infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .about-card h4 {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .about-card p {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .tech-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        /* Skills Section */
+        .skills {
+            background: var(--bg-secondary);
+        }
+
+        .skills-header {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 5rem;
+        }
+
+        .skills-header h2 {
+            font-size: clamp(2rem, 4vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .skill-category {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2.5rem;
+            backdrop-filter: blur(20px);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skill-category::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--gradient-1);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+
+        .skill-category:hover::before {
+            transform: scaleX(1);
+        }
+
+        .skill-category:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px var(--shadow-color);
+        }
+
+        .skill-category h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .skill-category h3 span {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .skill-tag {
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border-radius: 100px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .skill-tag:hover {
+            background: var(--accent);
+            color: #000;
+            transform: scale(1.05);
+        }
+
+        /* Experience Section */
+        .experience-header {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 5rem;
+        }
+
+        .experience-header h2 {
+            font-size: clamp(2rem, 4vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        .timeline {
+            position: relative;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--accent), var(--accent-secondary), transparent);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 4rem;
+            padding-bottom: 4rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 0;
+            width: 14px;
+            height: 14px;
+            background: var(--bg-primary);
+            border: 3px solid var(--accent);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-item:hover::before {
+            background: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .timeline-date {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-company {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .timeline-description {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .timeline-description li {
+            margin-bottom: 0.5rem;
+            list-style: none;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+
+        .timeline-description li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+        }
+
+        /* CV Section */
+        .cv-section {
+            background: var(--bg-secondary);
+        }
+
+        .cv-header {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 4rem;
+        }
+
+        .cv-header h2 {
+            font-size: clamp(2rem, 4vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .cv-header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .cv-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .cv-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2.5rem;
+            text-align: center;
+            backdrop-filter: blur(20px);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cv-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-1);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .cv-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 40px 80px var(--shadow-color);
+        }
+
+        .cv-card:hover::before {
+            opacity: 0.05;
+        }
+
+        .cv-card-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .cv-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            background: var(--gradient-1);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            transition: transform 0.4s ease;
+        }
+
+        .cv-card:hover .cv-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .cv-card h3 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .cv-card p {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 2rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 100px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            transform: scale(1.05);
+        }
+
+        .download-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        /* Contact Section */
+        .contact {
+            text-align: center;
+        }
+
+        .contact h2 {
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            font-weight: 800;
+            margin-bottom: 2rem;
+        }
+
+        .contact h2 span {
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .contact-email {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+        }
+
+        .contact-email a {
+            color: var(--accent);
+            text-decoration: none;
+            position: relative;
+        }
+
+        .contact-email a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .contact-email a:hover::after {
+            transform: scaleX(1);
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+        }
+
+        .social-link {
+            width: 60px;
+            height: 60px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.4s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .social-link:hover {
+            transform: translateY(-10px) scale(1.1);
+            border-color: var(--accent);
+            box-shadow: 0 20px 40px var(--accent-glow);
+        }
+
+        .social-link svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--text-primary);
+            transition: fill 0.3s ease;
+        }
+
+        .social-link:hover svg {
+            fill: var(--accent);
+        }
+
+        /* Footer */
+        footer {
+            position: relative;
+            z-index: 1;
+            padding: 3rem 4rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        footer p {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .footer-links a {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+
+        /* Animations for scroll */
+        .reveal {
+            opacity: 0;
+            transform: translateY(60px);
+            transition: all 0.8s ease;
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Glitch effect */
+        .glitch {
+            position: relative;
+        }
+
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .glitch::before {
+            animation: glitch-1 0.3s infinite linear alternate-reverse;
+            clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+            -webkit-text-fill-color: var(--text-primary);
+        }
+
+        .glitch::after {
+            animation: glitch-2 0.3s infinite linear alternate-reverse;
+            clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+            -webkit-text-fill-color: var(--text-primary);
+        }
+
+        @keyframes glitch-1 {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-3px);
+            }
+        }
+
+        @keyframes glitch-2 {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(3px);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            section {
+                padding: 6rem 2rem;
+            }
+
+            nav {
+                padding: 1.5rem 2rem;
+            }
+
+            .about {
+                grid-template-columns: 1fr;
+                gap: 4rem;
+            }
+
+            .about-visual {
+                display: none;
+            }
+
+            .hero-content {
+                gap: 1rem;
+            }
+
+            .hero-3d {
+                height: 450px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero-text {
+                padding: 0 1.5rem;
+            }
+
+            .hero h1 {
+                font-size: clamp(2.5rem, 12vw, 4rem);
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .hero-cta {
+                flex-direction: column;
+            }
+
+            .hero-3d {
+                height: 380px;
+            }
+
+            body {
+                cursor: auto;
+            }
+
+            .cursor,
+            .cursor-dot {
+                display: none;
+            }
+
+            footer {
+                flex-direction: column;
+                gap: 1.5rem;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="noise"></div>
+    <div class="cursor"></div>
+    <div class="cursor-dot"></div>
+    <div id="canvas-container"></div>
+
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+        <svg class="sun-icon" viewBox="0 0 24 24">
+            <path
+                d="M12 7a5 5 0 100 10 5 5 0 000-10zM12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+        </svg>
+        <svg class="moon-icon" viewBox="0 0 24 24">
+            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+        </svg>
+    </button>
+
+    <nav>
+        <a href="#" class="logo">Eddy.dev</a>
+        <ul class="nav-links">
+            <li><a href="#about">About</a></li>
+            <li><a href="#skills">Skills</a></li>
+            <li><a href="#experience">Experience</a></li>
+            <li><a href="#cv">Resume</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <div class="hero-badge">
+                    <span>Available for new opportunities</span>
+                </div>
+                <h1>
+                    <span class="glitch" data-text="MADU EDDY">MADU EDDY</span>
+                    <span class="accent">CHIDIEBERE</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Senior Software Engineer & Systems Architect with 6+ years crafting high-throughput fintech
+                    platforms, AI-powered backends, and pixel-perfect interfaces.
+                </p>
+                <div class="hero-cta">
+                    <a href="#cv" class="btn btn-primary magnetic">
+                        <span>Download CV</span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                        </svg>
+                    </a>
+                    <a href="#contact" class="btn btn-secondary magnetic">
+                        <span>Get in Touch</span>
+                    </a>
+                </div>
+            </div>
+            <div class="hero-3d">
+                <div id="chair-container"></div>
+                <div class="drag-hint">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2l0 4M12 18l0 4M2 12l4 0M18 12l4 0" />
+                        <circle cx="12" cy="12" r="3" />
+                    </svg>
+                    <span>Drag to rotate 360°</span>
+                </div>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <span>Scroll</span>
+            <div class="scroll-line"></div>
+        </div>
+    </section>
+
+    <div class="marquee-container">
+        <div class="marquee">
+            <span>Backend</span>
+            <span class="filled">Frontend</span>
+            <span>Fullstack</span>
+            <span class="filled">Fintech</span>
+            <span>AI/ML</span>
+            <span class="filled">Systems</span>
+            <span>Backend</span>
+            <span class="filled">Frontend</span>
+            <span>Fullstack</span>
+            <span class="filled">Fintech</span>
+            <span>AI/ML</span>
+            <span class="filled">Systems</span>
+        </div>
+    </div>
+
+    <section id="about" class="about">
+        <div class="about-content reveal">
+            <div class="section-label">About Me</div>
+            <h2>Building systems that scale, interfaces that delight</h2>
+            <p>I'm a Senior Fullstack Engineer and Systems Architect based in Lagos, Nigeria, with a passion for
+                building high-throughput fintech platforms and AI-powered applications.</p>
+            <p>My expertise spans from architecting secure wallet systems processing tens of thousands of transactions
+                monthly, to crafting intuitive B2B dashboards that translate complex financial data into actionable
+                insights.</p>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-number">6+</div>
+                    <div class="stat-label">Years Experience</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">15+</div>
+                    <div class="stat-label">Projects Delivered</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">99%</div>
+                    <div class="stat-label">System Uptime</div>
+                </div>
+            </div>
+        </div>
+        <div class="about-visual">
+            <div class="about-card card-1">
+                <div class="tech-icon">⚡</div>
+                <h4>Specialty</h4>
+                <p>Fintech & Payment Systems</p>
+            </div>
+            <div class="about-card card-2">
+                <div class="tech-icon">🤖</div>
+                <h4>Currently Building</h4>
+                <p>AI Financial Advisors</p>
+            </div>
+            <div class="about-card card-3">
+                <div class="tech-icon">🏗️</div>
+                <h4>Architecture</h4>
+                <p>Microservices & DDD</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="skills" class="skills">
+        <div class="skills-header reveal">
+            <div class="section-label">Technical Expertise</div>
+            <h2>Technologies I work with</h2>
+        </div>
+        <div class="skills-grid">
+            <div class="skill-category reveal">
+                <h3><span>💻</span> Languages & Frameworks</h3>
+                <div class="skill-tags">
+                    <span class="skill-tag">TypeScript</span>
+                    <span class="skill-tag">JavaScript</span>
+                    <span class="skill-tag">Python</span>
+                    <span class="skill-tag">Node.js</span>
+                    <span class="skill-tag">NestJS</span>
+                    <span class="skill-tag">Express.js</span>
+                    <span class="skill-tag">React</span>
+                    <span class="skill-tag">Next.js</span>
+                    <span class="skill-tag">Vue.js</span>
+                    <span class="skill-tag">Three.js</span>
+                    <span class="skill-tag">Fabric.js</span>
+                    <span class="skill-tag">Tailwind CSS</span>
+                </div>
+            </div>
+            <div class="skill-category reveal">
+                <h3><span>🗄️</span> Databases & Storage</h3>
+                <div class="skill-tags">
+                    <span class="skill-tag">PostgreSQL</span>
+                    <span class="skill-tag">MySQL</span>
+                    <span class="skill-tag">MongoDB</span>
+                    <span class="skill-tag">Redis</span>
+                    <span class="skill-tag">TypeORM</span>
+                    <span class="skill-tag">AWS S3</span>
+                    <span class="skill-tag">Cloudinary</span>
+                    <span class="skill-tag">Firebase</span>
+                </div>
+            </div>
+            <div class="skill-category reveal">
+                <h3><span>🏛️</span> Architecture</h3>
+                <div class="skill-tags">
+                    <span class="skill-tag">Microservices</span>
+                    <span class="skill-tag">Event-Driven Systems</span>
+                    <span class="skill-tag">Domain-Driven Design</span>
+                    <span class="skill-tag">REST APIs</span>
+                    <span class="skill-tag">GraphQL</span>
+                    <span class="skill-tag">RBAC</span>
+                </div>
+            </div>
+            <div class="skill-category reveal">
+                <h3><span>💳</span> Payments & Security</h3>
+                <div class="skill-tags">
+                    <span class="skill-tag">Stripe</span>
+                    <span class="skill-tag">Paystack</span>
+                    <span class="skill-tag">Flutterwave</span>
+                    <span class="skill-tag">NMI</span>
+                    <span class="skill-tag">Checkbook</span>
+                    <span class="skill-tag">Kount</span>
+                    <span class="skill-tag">JWT</span>
+                    <span class="skill-tag">2FA</span>
+                </div>
+            </div>
+            <div class="skill-category reveal">
+                <h3><span>🤖</span> AI & Emerging Tech</h3>
+                <div class="skill-tags">
+                    <span class="skill-tag">LangChain</span>
+                    <span class="skill-tag">LangGraph</span>
+                    <span class="skill-tag">Pinecone</span>
+                    <span class="skill-tag">OpenAI</span>
+                    <span class="skill-tag">RAG Pipelines</span>
+                </div>
+            </div>
+            <div class="skill-category reveal">
+                <h3><span>☁️</span> DevOps & Cloud</h3>
+                <div class="skill-tags">
+                    <span class="skill-tag">Docker</span>
+                    <span class="skill-tag">AWS</span>
+                    <span class="skill-tag">GCP</span>
+                    <span class="skill-tag">DigitalOcean</span>
+                    <span class="skill-tag">Nginx</span>
+                    <span class="skill-tag">CI/CD</span>
+                    <span class="skill-tag">RabbitMQ</span>
+                    <span class="skill-tag">BullMQ</span>
+                    <span class="skill-tag">Git/GitHub</span>
+                    <span class="skill-tag">Vercel</span>
+                </div>
+            </div>
+            <div class="skill-category reveal">
+                <h3><span>🧪</span> Testing & Tools</h3>
+                <div class="skill-tags">
+                    <span class="skill-tag">Jest</span>
+                    <span class="skill-tag">Cypress</span>
+                    <span class="skill-tag">Postman</span>
+                    <span class="skill-tag">Swagger</span>
+                    <span class="skill-tag">Webpack</span>
+                    <span class="skill-tag">Vite</span>
+                    <span class="skill-tag">ESLint</span>
+                    <span class="skill-tag">Prettier</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="experience">
+        <div class="experience-header reveal">
+            <div class="section-label">Career Journey</div>
+            <h2>Where I've made an impact</h2>
+        </div>
+        <div class="timeline">
+            <div class="timeline-item reveal">
+                <div class="timeline-date">Jun 2025 – Present</div>
+                <h3 class="timeline-title">Senior Fullstack Engineer / Systems Architect</h3>
+                <div class="timeline-company">Endow — Wellington, Delaware (Remote)</div>
+                <ul class="timeline-description">
+                    <li>Architected wallet system processing tens of thousands of transactions/month with 99% balance
+                        consistency</li>
+                    <li>Eliminated negative-balance incidents through atomic withdrawals and row-level locking</li>
+                    <li>Designed secure B2B Partner API with public/private key auth and environment isolation</li>
+                    <li>Improved API performance by up to 15× through SQL optimization and Redis caching</li>
+                    <li>Building AI-powered Financial Advisor using LangChain, LangGraph, and OpenAI</li>
+                </ul>
+            </div>
+            <div class="timeline-item reveal">
+                <div class="timeline-date">Jul 2025 – Present</div>
+                <h3 class="timeline-title">Fullstack Engineer (Contract)</h3>
+                <div class="timeline-company">Prime Core Solutions — Houston, TX (Remote)</div>
+                <ul class="timeline-description">
+                    <li>Built production-grade fraud detection system using Kount with real-time device fingerprinting
+                    </li>
+                    <li>Implemented automated KYC workflows and risk-based fund hold mechanisms</li>
+                    <li>Integrated NMI (deposits) and Checkbook (withdrawals) with cryptographic validation</li>
+                </ul>
+            </div>
+            <div class="timeline-item reveal">
+                <div class="timeline-date">May 2022 – Sep 2025</div>
+                <h3 class="timeline-title">Senior Fullstack Engineer</h3>
+                <div class="timeline-company">Buzzz Inc. — Lagos (Remote)</div>
+                <ul class="timeline-description">
+                    <li>Built creator-commerce platforms including wallets, orders, and payout systems</li>
+                    <li>Developed 3D merchandise designer using Fabric.js and Three.js</li>
+                    <li>Optimized core algorithms improving query efficiency by over 20%</li>
+                </ul>
+            </div>
+            <div class="timeline-item reveal">
+                <div class="timeline-date">Dec 2024 – May 2025</div>
+                <h3 class="timeline-title">Senior Frontend Engineer</h3>
+                <div class="timeline-company">Digital Vision (Waseet) — Egypt (Remote)</div>
+                <ul class="timeline-description">
+                    <li>Led frontend development of large-scale real estate marketplace with auctions</li>
+                    <li>Integrated GraphQL APIs with performance optimizations across high-traffic pages</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section id="cv" class="cv-section">
+        <div class="cv-header reveal">
+            <div class="section-label">Download Resume</div>
+            <h2>Get my CV</h2>
+            <p>Choose the version that best fits your needs</p>
+        </div>
+        <div class="cv-grid">
+            <div class="cv-card reveal">
+                <div class="cv-card-content">
+                    <div class="cv-icon">🔧</div>
+                    <h3>Backend Engineer</h3>
+                    <p>Systems Architecture & Fintech</p>
+                    <a href="Eddy-Madu-Senior-Backend-Engineer_Resume.pdf" download class="download-btn">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                        </svg>
+                        Download PDF
+                    </a>
+                </div>
+            </div>
+            <div class="cv-card reveal">
+                <div class="cv-card-content">
+                    <div class="cv-icon">🎨</div>
+                    <h3>Frontend Engineer</h3>
+                    <p>UI/UX & Product Development</p>
+                    <a href="Eddy-Madu-Senior-Frontend-Engineer_Resume.pdf" download class="download-btn">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                        </svg>
+                        Download PDF
+                    </a>
+                </div>
+            </div>
+            <div class="cv-card reveal">
+                <div class="cv-card-content">
+                    <div class="cv-icon">⚡</div>
+                    <h3>Fullstack Engineer</h3>
+                    <p>End-to-End Development</p>
+                    <a href="new_full_stack_cv.pdf" download class="download-btn">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                        </svg>
+                        Download PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="contact">
+        <div class="reveal">
+            <div class="section-label">Get in Touch</div>
+            <h2>Let's build <span>something great</span></h2>
+            <p class="contact-email">
+                Reach out at <a href="mailto:eddymadu90@gmail.com">eddymadu90@gmail.com</a>
+            </p>
+            <div class="social-links">
+                <a href="https://linkedin.com/in/eddy-madu" target="_blank" rel="noopener noreferrer"
+                    class="social-link magnetic" aria-label="LinkedIn">
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                    </svg>
+                </a>
+                <a href="https://github.com/eddy-bob" target="_blank" rel="noopener noreferrer"
+                    class="social-link magnetic" aria-label="GitHub">
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" />
+                    </svg>
+                </a>
+                <a href="tel:+2349075219854" class="social-link magnetic" aria-label="Phone">
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2025 Madu Eddy Chidiebere. Crafted with precision.</p>
+        <div class="footer-links">
+            <a href="https://linkedin.com/in/eddy-madu" target="_blank">LinkedIn</a>
+            <a href="https://github.com/eddy-bob" target="_blank">GitHub</a>
+            <a href="mailto:eddymadu90@gmail.com">Email</a>
+        </div>
+    </footer>
+
+    <script>
+        // Theme Toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            if (window.updateSceneColors) window.updateSceneColors(newTheme);
+            if (window.updateChairColors) window.updateChairColors(newTheme);
+        }
+
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+
+        // Custom Cursor
+        const cursor = document.querySelector('.cursor');
+        const cursorDot = document.querySelector('.cursor-dot');
+
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX - 10 + 'px';
+            cursor.style.top = e.clientY - 10 + 'px';
+            cursorDot.style.left = e.clientX - 3 + 'px';
+            cursorDot.style.top = e.clientY - 3 + 'px';
+        });
+
+        const hoverElements = document.querySelectorAll('a, button, .skill-tag, .cv-card');
+        hoverElements.forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+
+        // Scroll reveal
+        const reveals = document.querySelectorAll('.reveal');
+        function revealOnScroll() {
+            reveals.forEach(el => {
+                const windowHeight = window.innerHeight;
+                const elementTop = el.getBoundingClientRect().top;
+                if (elementTop < windowHeight - 150) el.classList.add('active');
+            });
+        }
+        window.addEventListener('scroll', revealOnScroll);
+        revealOnScroll();
+
+        // Magnetic buttons
+        const magneticElements = document.querySelectorAll('.magnetic');
+        magneticElements.forEach(el => {
+            el.addEventListener('mousemove', (e) => {
+                const rect = el.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                el.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
+            });
+            el.addEventListener('mouseleave', () => el.style.transform = 'translate(0, 0)');
+        });
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        // ==================== THREE.JS BACKGROUND ====================
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        const shapes = [];
+        const geometries = [
+            new THREE.IcosahedronGeometry(1, 0),
+            new THREE.OctahedronGeometry(1, 0),
+            new THREE.TetrahedronGeometry(1, 0),
+            new THREE.TorusGeometry(0.7, 0.3, 16, 32),
+            new THREE.TorusKnotGeometry(0.5, 0.2, 64, 8)
+        ];
+
+        function getThemeColor(theme) { return theme === 'dark' ? 0x22d3ee : 0x0891b2; }
+        function getSecondaryColor(theme) { return theme === 'dark' ? 0xa855f7 : 0x9333ea; }
+
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+
+        for (let i = 0; i < 15; i++) {
+            const geometry = geometries[Math.floor(Math.random() * geometries.length)];
+            const material = new THREE.MeshBasicMaterial({
+                color: i % 2 === 0 ? getThemeColor(currentTheme) : getSecondaryColor(currentTheme),
+                wireframe: true,
+                transparent: true,
+                opacity: 0.15
+            });
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set((Math.random() - 0.5) * 40, (Math.random() - 0.5) * 40, (Math.random() - 0.5) * 20 - 10);
+            mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+            mesh.scale.setScalar(Math.random() * 2 + 0.5);
+            mesh.userData = {
+                rotationSpeed: { x: (Math.random() - 0.5) * 0.01, y: (Math.random() - 0.5) * 0.01, z: (Math.random() - 0.5) * 0.01 },
+                floatOffset: Math.random() * Math.PI * 2,
+                originalY: mesh.position.y
+            };
+            shapes.push(mesh);
+            scene.add(mesh);
+        }
+
+        const particlesGeometry = new THREE.BufferGeometry();
+        const posArray = new Float32Array(500 * 3);
+        for (let i = 0; i < 500 * 3; i++) posArray[i] = (Math.random() - 0.5) * 50;
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        const particlesMaterial = new THREE.PointsMaterial({ size: 0.05, color: getThemeColor(currentTheme), transparent: true, opacity: 0.4 });
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+
+        camera.position.z = 15;
+
+        let mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+        });
+
+        window.updateSceneColors = function (theme) {
+            const primaryColor = getThemeColor(theme);
+            const secondaryColor = getSecondaryColor(theme);
+            shapes.forEach((mesh, i) => mesh.material.color.setHex(i % 2 === 0 ? primaryColor : secondaryColor));
+            particlesMaterial.color.setHex(primaryColor);
+        };
+
+        // ==================== 3D CHAIR WITH PERSON ====================
+        const chairContainer = document.getElementById('chair-container');
+        const chairScene = new THREE.Scene();
+        const chairCamera = new THREE.PerspectiveCamera(50, chairContainer.clientWidth / chairContainer.clientHeight, 0.1, 1000);
+        const chairRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        chairRenderer.setSize(chairContainer.clientWidth, chairContainer.clientHeight);
+        chairRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        chairRenderer.shadowMap.enabled = true;
+        chairContainer.appendChild(chairRenderer.domElement);
+
+        // Lighting - Enhanced for realistic chair rendering
+        chairScene.add(new THREE.AmbientLight(0xffffff, 0.5));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+        dirLight.position.set(5, 10, 7);
+        dirLight.castShadow = true;
+        chairScene.add(dirLight);
+        // Key light
+        const keyLight = new THREE.DirectionalLight(0xffffff, 0.6);
+        keyLight.position.set(-5, 5, 5);
+        chairScene.add(keyLight);
+        // Subtle colored rim lights for depth
+        const pointLight1 = new THREE.PointLight(0x4a9eff, 0.4, 15);
+        pointLight1.position.set(-4, 3, 3);
+        chairScene.add(pointLight1);
+        const pointLight2 = new THREE.PointLight(0xff6b6b, 0.3, 15);
+        pointLight2.position.set(4, 2, -2);
+        chairScene.add(pointLight2);
+
+        // Materials - Realistic Gaming Chair Colors
+        const chairTheme = document.documentElement.getAttribute('data-theme');
+        // Main chair body - black leather look
+        const chairMaterial = new THREE.MeshStandardMaterial({
+            color: 0x1a1a1a,
+            metalness: 0.1,
+            roughness: 0.4
+        });
+        // Racing stripes / accent color - red for gaming aesthetic
+        const accentMaterial = new THREE.MeshStandardMaterial({
+            color: 0xdc2626,
+            metalness: 0.2,
+            roughness: 0.5
+        });
+        // Chrome/polished metal for base and frame
+        const metalMaterial = new THREE.MeshStandardMaterial({
+            color: 0xc0c0c0,
+            metalness: 0.95,
+            roughness: 0.1
+        });
+        // Black plastic for wheels
+        const plasticMaterial = new THREE.MeshStandardMaterial({
+            color: 0x2a2a2a,
+            metalness: 0.0,
+            roughness: 0.6
+        });
+        // Person materials
+        const skinMaterial = new THREE.MeshStandardMaterial({ color: 0x8d5524, metalness: 0.1, roughness: 0.8 });
+        const shirtMaterial = new THREE.MeshStandardMaterial({ color: 0x1e40af, metalness: 0.1, roughness: 0.6 });
+        const pantsMaterial = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.1, roughness: 0.7 });
+        const hairMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.2, roughness: 0.8 });
+        const shoeMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.3, roughness: 0.5 });
+        // Cushion - black with subtle texture
+        const cushionMaterial = new THREE.MeshStandardMaterial({
+            color: 0x0f0f0f,
+            metalness: 0.05,
+            roughness: 0.7
+        });
+
+        const chairGroup = new THREE.Group();
+
+        // ===== REALISTIC GAMING CHAIR =====
+
+        // Seat base (bucket seat style)
+        const seatGeom = new THREE.BoxGeometry(1.9, 0.25, 1.9);
+        const seat = new THREE.Mesh(seatGeom, chairMaterial);
+        seat.position.y = 1.15;
+        seat.castShadow = true;
+        chairGroup.add(seat);
+
+        // Seat cushion with contour
+        const cushion = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.18, 1.65), cushionMaterial);
+        cushion.position.y = 1.34;
+        cushion.castShadow = true;
+        chairGroup.add(cushion);
+
+        // Seat side bolsters (racing style)
+        const leftBolster = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.3, 1.5), chairMaterial);
+        leftBolster.position.set(-0.85, 1.35, -0.1);
+        chairGroup.add(leftBolster);
+        const rightBolster = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.3, 1.5), chairMaterial);
+        rightBolster.position.set(0.85, 1.35, -0.1);
+        chairGroup.add(rightBolster);
+
+        // Backrest frame
+        const backrest = new THREE.Mesh(new THREE.BoxGeometry(1.9, 2.4, 0.25), chairMaterial);
+        backrest.position.set(0, 2.5, -0.85);
+        backrest.rotation.x = 0.08;
+        backrest.castShadow = true;
+        chairGroup.add(backrest);
+
+        // Backrest cushion
+        const backCushion = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.0, 0.18), cushionMaterial);
+        backCushion.position.set(0, 2.4, -0.68);
+        backCushion.rotation.x = 0.08;
+        chairGroup.add(backCushion);
+
+        // Red racing stripes on backrest
+        const stripe1 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 1.8, 0.19), accentMaterial);
+        stripe1.position.set(-0.45, 2.4, -0.67);
+        stripe1.rotation.x = 0.08;
+        chairGroup.add(stripe1);
+        const stripe2 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 1.8, 0.19), accentMaterial);
+        stripe2.position.set(0.45, 2.4, -0.67);
+        stripe2.rotation.x = 0.08;
+        chairGroup.add(stripe2);
+
+        // Shoulder wings (racing bucket style)
+        const leftWing = new THREE.Mesh(new THREE.BoxGeometry(0.25, 1.2, 0.5), chairMaterial);
+        leftWing.position.set(-0.95, 2.8, -0.65);
+        leftWing.rotation.x = 0.08;
+        leftWing.rotation.z = 0.15;
+        chairGroup.add(leftWing);
+        const rightWing = new THREE.Mesh(new THREE.BoxGeometry(0.25, 1.2, 0.5), chairMaterial);
+        rightWing.position.set(0.95, 2.8, -0.65);
+        rightWing.rotation.x = 0.08;
+        rightWing.rotation.z = -0.15;
+        chairGroup.add(rightWing);
+
+        // Headrest pillow
+        const headrest = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.35, 0.2), cushionMaterial);
+        headrest.position.set(0, 3.65, -0.6);
+        headrest.rotation.x = 0.08;
+        chairGroup.add(headrest);
+        // Headrest accent stripe
+        const headStripe = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.08, 0.21), accentMaterial);
+        headStripe.position.set(0, 3.55, -0.59);
+        headStripe.rotation.x = 0.08;
+        chairGroup.add(headStripe);
+
+        // Lumbar support pillow
+        const lumbar = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.3, 0.15), cushionMaterial);
+        lumbar.position.set(0, 1.9, -0.55);
+        lumbar.rotation.x = 0.08;
+        chairGroup.add(lumbar);
+
+        // Armrests with padding
+        const leftArmBase = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.5, 0.12), metalMaterial);
+        leftArmBase.position.set(-0.9, 1.45, 0.1);
+        chairGroup.add(leftArmBase);
+        const leftArmrest = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.08, 0.5), cushionMaterial);
+        leftArmrest.position.set(-0.9, 1.72, 0.0);
+        chairGroup.add(leftArmrest);
+
+        const rightArmBase = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.5, 0.12), metalMaterial);
+        rightArmBase.position.set(0.9, 1.45, 0.1);
+        chairGroup.add(rightArmBase);
+        const rightArmrest = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.08, 0.5), cushionMaterial);
+        rightArmrest.position.set(0.9, 1.72, 0.0);
+        chairGroup.add(rightArmrest);
+
+        // Gas lift cylinder
+        const gasLift = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.5, 16), metalMaterial);
+        gasLift.position.y = 0.85;
+        chairGroup.add(gasLift);
+        const gasLiftCover = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.1, 0.3, 16), plasticMaterial);
+        gasLiftCover.position.y = 0.7;
+        chairGroup.add(gasLiftCover);
+
+        // 5-star base (chrome)
+        const baseHub = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.1, 16), metalMaterial);
+        baseHub.position.y = 0.35;
+        chairGroup.add(baseHub);
+
+        // Base legs and caster wheels
+        for (let i = 0; i < 5; i++) {
+            const angle = (i / 5) * Math.PI * 2;
+            // Chrome leg
+            const leg = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.06, 0.85), metalMaterial);
+            leg.position.set(Math.sin(angle) * 0.42, 0.32, Math.cos(angle) * 0.42);
+            leg.rotation.y = -angle;
+            chairGroup.add(leg);
+
+            // Caster housing
+            const casterHousing = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.12, 12), plasticMaterial);
+            casterHousing.position.set(Math.sin(angle) * 0.78, 0.18, Math.cos(angle) * 0.78);
+            chairGroup.add(casterHousing);
+
+            // Wheel
+            const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.06, 16), plasticMaterial);
+            wheel.position.set(Math.sin(angle) * 0.78, 0.09, Math.cos(angle) * 0.78);
+            wheel.rotation.z = Math.PI / 2;
+            wheel.rotation.y = angle;
+            chairGroup.add(wheel);
+        }
+
+        // ===== REALISTIC HUMAN FIGURE WITH HOODIE =====
+        const personGroup = new THREE.Group();
+
+        // Hoodie material - dark blue/navy
+        const hoodieMaterial = new THREE.MeshStandardMaterial({
+            color: 0x1e293b,
+            metalness: 0.05,
+            roughness: 0.8
+        });
+
+        // Torso/Hoodie body - more natural rounded shape
+        const torsoGeom = new THREE.CylinderGeometry(0.4, 0.44, 1.05, 16);
+        const torso = new THREE.Mesh(torsoGeom, hoodieMaterial);
+        torso.position.set(0, 2.15, -0.05);
+        torso.rotation.x = 0.12;
+        torso.scale.set(1.15, 1, 0.75);
+        torso.castShadow = true;
+        personGroup.add(torso);
+
+        // Hoodie front pocket (kangaroo pocket)
+        const pocketMaterial = new THREE.MeshStandardMaterial({ color: 0x172033, metalness: 0.05, roughness: 0.85 });
+        const pocket = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.2, 0.08), pocketMaterial);
+        pocket.position.set(0, 1.85, 0.28);
+        pocket.rotation.x = 0.12;
+        personGroup.add(pocket);
+
+        // EDDY TECH text on hoodie
+        function createHoodieText() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // EDDY text
+            ctx.font = 'bold 42px Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#22d3ee';
+            ctx.fillText('EDDY', canvas.width / 2, 40);
+
+            // TECH text
+            ctx.font = 'bold 36px Arial, sans-serif';
+            ctx.fillStyle = '#a855f7';
+            ctx.fillText('TECH', canvas.width / 2, 88);
+
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        const hoodieTextTexture = createHoodieText();
+        const hoodieTextMaterial = new THREE.MeshBasicMaterial({
+            map: hoodieTextTexture,
+            transparent: true,
+            side: THREE.FrontSide
+        });
+        const hoodieTextPlane = new THREE.Mesh(new THREE.PlaneGeometry(0.45, 0.25), hoodieTextMaterial);
+        hoodieTextPlane.position.set(0, 2.25, 0.3);
+        hoodieTextPlane.rotation.x = 0.12;
+        personGroup.add(hoodieTextPlane);
+
+        // Shoulders (hoodie shoulders - slightly puffier)
+        const leftShoulder = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), hoodieMaterial);
+        leftShoulder.position.set(-0.5, 2.55, -0.05);
+        leftShoulder.scale.set(1, 0.85, 0.85);
+        personGroup.add(leftShoulder);
+        const rightShoulder = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), hoodieMaterial);
+        rightShoulder.position.set(0.5, 2.55, -0.05);
+        rightShoulder.scale.set(1, 0.85, 0.85);
+        personGroup.add(rightShoulder);
+
+        // Hood (down/resting on back)
+        const hoodBack = new THREE.Mesh(new THREE.SphereGeometry(0.28, 16, 16, 0, Math.PI * 2, 0, Math.PI * 0.5), hoodieMaterial);
+        hoodBack.position.set(0, 2.7, -0.25);
+        hoodBack.rotation.x = 0.5;
+        hoodBack.scale.set(1.2, 0.8, 1);
+        personGroup.add(hoodBack);
+
+        // Hoodie collar/neckline
+        const collar = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.06, 8, 16), hoodieMaterial);
+        collar.position.set(0, 2.68, 0.05);
+        collar.rotation.x = Math.PI / 2;
+        personGroup.add(collar);
+
+        // Neck (visible above hoodie)
+        const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 0.12, 16), skinMaterial);
+        neck.position.set(0, 2.78, 0.02);
+        personGroup.add(neck);
+
+        // Head - natural oval shape
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.32, 32, 32), skinMaterial);
+        head.position.set(0, 3.15, 0.05);
+        head.scale.set(0.85, 1, 0.9);
+        personGroup.add(head);
+
+        // Hair - fuller, more natural
+        const hairMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.9 });
+        const hairTop = new THREE.Mesh(new THREE.SphereGeometry(0.34, 32, 32, 0, Math.PI * 2, 0, Math.PI * 0.6), hairMat);
+        hairTop.position.set(0, 3.22, -0.02);
+        hairTop.scale.set(0.88, 0.75, 0.95);
+        personGroup.add(hairTop);
+        // Side hair
+        const hairLeft = new THREE.Mesh(new THREE.SphereGeometry(0.15, 16, 16), hairMat);
+        hairLeft.position.set(-0.24, 3.15, -0.05);
+        hairLeft.scale.set(0.6, 1, 0.8);
+        personGroup.add(hairLeft);
+        const hairRight = new THREE.Mesh(new THREE.SphereGeometry(0.15, 16, 16), hairMat);
+        hairRight.position.set(0.24, 3.15, -0.05);
+        hairRight.scale.set(0.6, 1, 0.8);
+        personGroup.add(hairRight);
+
+        // Ears
+        const earMaterial = skinMaterial;
+        const leftEar = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 12), earMaterial);
+        leftEar.position.set(-0.28, 3.12, 0);
+        leftEar.scale.set(0.5, 1, 0.7);
+        personGroup.add(leftEar);
+        const rightEar = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 12), earMaterial);
+        rightEar.position.set(0.28, 3.12, 0);
+        rightEar.scale.set(0.5, 1, 0.7);
+        personGroup.add(rightEar);
+
+        // Eyebrows
+        const browMaterial = new THREE.MeshStandardMaterial({ color: 0x2a2a2a });
+        const leftBrow = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.02, 0.03), browMaterial);
+        leftBrow.position.set(-0.1, 3.28, 0.26);
+        leftBrow.rotation.z = 0.1;
+        personGroup.add(leftBrow);
+        const rightBrow = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.02, 0.03), browMaterial);
+        rightBrow.position.set(0.1, 3.28, 0.26);
+        rightBrow.rotation.z = -0.1;
+        personGroup.add(rightBrow);
+
+        // Eyes - more natural
+        const eyeWhiteMaterial = new THREE.MeshStandardMaterial({ color: 0xf5f5f5 });
+        const irisMaterial = new THREE.MeshStandardMaterial({ color: 0x3d2314 });
+        const pupilMaterial = new THREE.MeshStandardMaterial({ color: 0x0a0a0a });
+
+        const leftEyeWhite = new THREE.Mesh(new THREE.SphereGeometry(0.045, 16, 16), eyeWhiteMaterial);
+        leftEyeWhite.position.set(-0.1, 3.18, 0.25);
+        leftEyeWhite.scale.set(1, 0.7, 0.5);
+        personGroup.add(leftEyeWhite);
+        const leftIris = new THREE.Mesh(new THREE.SphereGeometry(0.025, 16, 16), irisMaterial);
+        leftIris.position.set(-0.1, 3.18, 0.28);
+        personGroup.add(leftIris);
+        const leftPupil = new THREE.Mesh(new THREE.SphereGeometry(0.012, 12, 12), pupilMaterial);
+        leftPupil.position.set(-0.1, 3.18, 0.295);
+        personGroup.add(leftPupil);
+
+        const rightEyeWhite = new THREE.Mesh(new THREE.SphereGeometry(0.045, 16, 16), eyeWhiteMaterial);
+        rightEyeWhite.position.set(0.1, 3.18, 0.25);
+        rightEyeWhite.scale.set(1, 0.7, 0.5);
+        personGroup.add(rightEyeWhite);
+        const rightIris = new THREE.Mesh(new THREE.SphereGeometry(0.025, 16, 16), irisMaterial);
+        rightIris.position.set(0.1, 3.18, 0.28);
+        personGroup.add(rightIris);
+        const rightPupil = new THREE.Mesh(new THREE.SphereGeometry(0.012, 12, 12), pupilMaterial);
+        rightPupil.position.set(0.1, 3.18, 0.295);
+        personGroup.add(rightPupil);
+
+        // Nose
+        const nose = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.12, 8), skinMaterial);
+        nose.position.set(0, 3.08, 0.28);
+        nose.rotation.x = -0.3;
+        personGroup.add(nose);
+
+        // Lips/Mouth - subtle smile
+        const lipMaterial = new THREE.MeshStandardMaterial({ color: 0x8b6058 });
+        const upperLip = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.02, 0.03), lipMaterial);
+        upperLip.position.set(0, 2.98, 0.26);
+        personGroup.add(upperLip);
+        const lowerLip = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.025, 0.03), lipMaterial);
+        lowerLip.position.set(0, 2.955, 0.26);
+        personGroup.add(lowerLip);
+
+        // Upper Arms (hoodie sleeves)
+        const leftUpperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.1, 0.45, 12), hoodieMaterial);
+        leftUpperArm.position.set(-0.55, 2.25, 0.1);
+        leftUpperArm.rotation.z = 0.5;
+        leftUpperArm.rotation.x = -0.4;
+        personGroup.add(leftUpperArm);
+        const rightUpperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.1, 0.45, 12), hoodieMaterial);
+        rightUpperArm.position.set(0.55, 2.25, 0.1);
+        rightUpperArm.rotation.z = -0.5;
+        rightUpperArm.rotation.x = -0.4;
+        personGroup.add(rightUpperArm);
+
+        // Lower Arms (forearms)
+        const leftForearm = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.08, 0.4, 12), skinMaterial);
+        leftForearm.position.set(-0.42, 1.82, 0.42);
+        leftForearm.rotation.x = -1.2;
+        leftForearm.rotation.z = 0.3;
+        personGroup.add(leftForearm);
+        const rightForearm = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.08, 0.4, 12), skinMaterial);
+        rightForearm.position.set(0.42, 1.82, 0.42);
+        rightForearm.rotation.x = -1.2;
+        rightForearm.rotation.z = -0.3;
+        personGroup.add(rightForearm);
+
+        // Hands - on keyboard
+        const handMaterial = skinMaterial;
+        const leftHand = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 12), handMaterial);
+        leftHand.position.set(-0.25, 1.62, 0.6);
+        leftHand.scale.set(0.9, 0.5, 1.1);
+        personGroup.add(leftHand);
+        const rightHand = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 12), handMaterial);
+        rightHand.position.set(0.25, 1.62, 0.6);
+        rightHand.scale.set(0.9, 0.5, 1.1);
+        personGroup.add(rightHand);
+
+        // Thighs
+        const leftThigh = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.13, 0.7, 12), pantsMaterial);
+        leftThigh.position.set(-0.22, 1.42, 0.35);
+        leftThigh.rotation.x = Math.PI / 2;
+        leftThigh.rotation.z = 0.08;
+        personGroup.add(leftThigh);
+        const rightThigh = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.13, 0.7, 12), pantsMaterial);
+        rightThigh.position.set(0.22, 1.42, 0.35);
+        rightThigh.rotation.x = Math.PI / 2;
+        rightThigh.rotation.z = -0.08;
+        personGroup.add(rightThigh);
+
+        // Lower Legs
+        const leftCalf = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.08, 0.7, 12), pantsMaterial);
+        leftCalf.position.set(-0.28, 0.72, 0.72);
+        leftCalf.rotation.x = 0.15;
+        personGroup.add(leftCalf);
+        const rightCalf = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.08, 0.7, 12), pantsMaterial);
+        rightCalf.position.set(0.28, 0.72, 0.72);
+        rightCalf.rotation.x = 0.15;
+        personGroup.add(rightCalf);
+
+        // Shoes - sneakers style
+        const leftShoe = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.1, 0.32), shoeMaterial);
+        leftShoe.position.set(-0.28, 0.3, 0.9);
+        personGroup.add(leftShoe);
+        const leftShoeToe = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 12), shoeMaterial);
+        leftShoeToe.position.set(-0.28, 0.3, 1.02);
+        leftShoeToe.scale.set(1, 0.6, 0.8);
+        personGroup.add(leftShoeToe);
+
+        const rightShoe = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.1, 0.32), shoeMaterial);
+        rightShoe.position.set(0.28, 0.3, 0.9);
+        personGroup.add(rightShoe);
+        const rightShoeToe = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 12), shoeMaterial);
+        rightShoeToe.position.set(0.28, 0.3, 1.02);
+        rightShoeToe.scale.set(1, 0.6, 0.8);
+        personGroup.add(rightShoeToe);
+
+        // ===== LAPTOP (Back facing viewer with EDDYTECH logo) =====
+        const laptopMaterial = new THREE.MeshStandardMaterial({ color: 0xc0c0c0, metalness: 0.7, roughness: 0.3 });
+
+        // Laptop base on lap
+        const laptopBase = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.025, 0.42), laptopMaterial);
+        laptopBase.position.set(0, 1.52, 0.5);
+        personGroup.add(laptopBase);
+
+        // Laptop screen/lid (back facing us)
+        const laptopLid = new THREE.Mesh(new THREE.BoxGeometry(0.63, 0.42, 0.02), laptopMaterial);
+        laptopLid.position.set(0, 1.76, 0.72);
+        laptopLid.rotation.x = 0.25;
+        personGroup.add(laptopLid);
+
+        // Screen (facing person, away from us)
+        const screenDisplayMaterial = new THREE.MeshStandardMaterial({ color: 0x22d3ee, emissive: 0x22d3ee, emissiveIntensity: 0.5 });
+        const screenDisplay = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.36, 0.005), screenDisplayMaterial);
+        screenDisplay.position.set(0, 1.76, 0.708);
+        screenDisplay.rotation.x = 0.25;
+        personGroup.add(screenDisplay);
+
+        // EDDYTECH Logo on laptop back (facing viewer)
+        function createLogoTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+
+            // Transparent background
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Logo text
+            ctx.font = 'bold 36px Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // Gradient fill for text
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+            gradient.addColorStop(0, '#22d3ee');
+            gradient.addColorStop(1, '#a855f7');
+            ctx.fillStyle = gradient;
+            ctx.fillText('EDDYTECH', canvas.width / 2, canvas.height / 2);
+
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        const logoTexture = createLogoTexture();
+        const logoMaterial = new THREE.MeshBasicMaterial({
+            map: logoTexture,
+            transparent: true,
+            side: THREE.DoubleSide
+        });
+        const logoPlane = new THREE.Mesh(new THREE.PlaneGeometry(0.4, 0.1), logoMaterial);
+        logoPlane.position.set(0, 1.76, 0.733);
+        logoPlane.rotation.x = 0.25;
+        personGroup.add(logoPlane);
+
+        // Apple-style glowing logo effect
+        const glowMaterial = new THREE.MeshBasicMaterial({
+            color: 0x22d3ee,
+            transparent: true,
+            opacity: 0.3
+        });
+        const logoGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.45, 0.12), glowMaterial);
+        logoGlow.position.set(0, 1.76, 0.734);
+        logoGlow.rotation.x = 0.25;
+        personGroup.add(logoGlow);
+
+        chairGroup.add(personGroup);
+
+        // Floating code symbols
+        const codeSymbols = [];
+        const symbolTexts = ['{ }', '< />', 'fn()', '[ ]', '=> ', '++', '&&', '||', '!=', '::'];
+
+        function createTextSprite(text, color) {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 128; canvas.height = 64;
+            context.fillStyle = 'transparent';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.font = 'bold 32px monospace';
+            context.fillStyle = color;
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(text, canvas.width / 2, canvas.height / 2);
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true, opacity: 0.6 });
+            const sprite = new THREE.Sprite(spriteMaterial);
+            sprite.scale.set(0.8, 0.4, 1);
+            return sprite;
+        }
+
+        for (let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI * 2;
+            const radius = 2 + Math.random() * 0.5;
+            const height = 1.5 + Math.random() * 2;
+            const color = i % 2 === 0 ? '#22d3ee' : '#a855f7';
+            const symbol = createTextSprite(symbolTexts[i % symbolTexts.length], color);
+            symbol.position.set(Math.sin(angle) * radius, height, Math.cos(angle) * radius);
+            symbol.userData = { angle, radius, baseHeight: height, speed: 0.3 + Math.random() * 0.3, floatOffset: Math.random() * Math.PI * 2 };
+            codeSymbols.push(symbol);
+            chairGroup.add(symbol);
+        }
+
+        chairGroup.position.y = -1.5;
+        chairScene.add(chairGroup);
+        chairCamera.position.set(0, 2, 6);
+        chairCamera.lookAt(0, 1.5, 0);
+
+        // Drag controls - 360 horizontal + up/down vertical rotation
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        let targetRotation = 0, currentRotation = 0;
+        let targetPitch = 0, currentPitch = 0;
+        const maxPitch = Math.PI / 4; // Limit vertical rotation to 45 degrees
+
+        chairContainer.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+            chairContainer.style.cursor = 'grabbing';
+        });
+        document.addEventListener('mouseup', () => { isDragging = false; chairContainer.style.cursor = 'grab'; });
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const deltaX = e.clientX - previousMousePosition.x;
+            const deltaY = e.clientY - previousMousePosition.y;
+            targetRotation += deltaX * 0.01;
+            targetPitch = Math.max(-maxPitch, Math.min(maxPitch, targetPitch + deltaY * 0.005));
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+        });
+
+        // Touch
+        chairContainer.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        });
+        chairContainer.addEventListener('touchend', () => isDragging = false);
+        chairContainer.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            const deltaX = e.touches[0].clientX - previousMousePosition.x;
+            const deltaY = e.touches[0].clientY - previousMousePosition.y;
+            targetRotation += deltaX * 0.01;
+            targetPitch = Math.max(-maxPitch, Math.min(maxPitch, targetPitch + deltaY * 0.005));
+            previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        });
+
+        // Hover effect
+        let isHoveringChair = false;
+        chairContainer.addEventListener('mouseenter', () => isHoveringChair = true);
+        chairContainer.addEventListener('mouseleave', () => isHoveringChair = false);
+
+        window.updateChairColors = function (theme) {
+            // Chair stays black regardless of theme for realistic look
+            // Only update the laptop screen glow
+            screenDisplayMaterial.color.setHex(theme === 'dark' ? 0x22d3ee : 0x0891b2);
+            screenDisplayMaterial.emissive.setHex(theme === 'dark' ? 0x22d3ee : 0x0891b2);
+        };
+
+        // Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            if (chairContainer.clientWidth && chairContainer.clientHeight) {
+                chairCamera.aspect = chairContainer.clientWidth / chairContainer.clientHeight;
+                chairCamera.updateProjectionMatrix();
+                chairRenderer.setSize(chairContainer.clientWidth, chairContainer.clientHeight);
+            }
+        });
+
+        // Animation
+        let time = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.01;
+
+            // Background shapes
+            shapes.forEach(mesh => {
+                mesh.rotation.x += mesh.userData.rotationSpeed.x;
+                mesh.rotation.y += mesh.userData.rotationSpeed.y;
+                mesh.rotation.z += mesh.userData.rotationSpeed.z;
+                mesh.position.y = mesh.userData.originalY + Math.sin(time + mesh.userData.floatOffset) * 0.5;
+            });
+            particlesMesh.rotation.y += 0.0005;
+            particlesMesh.rotation.x += 0.0002;
+            camera.position.x += (mouseX * 2 - camera.position.x) * 0.02;
+            camera.position.y += (mouseY * 2 - camera.position.y) * 0.02;
+            camera.lookAt(scene.position);
+            renderer.render(scene, camera);
+
+            // Chair scene - apply 360 horizontal + up/down rotation
+            currentRotation += (targetRotation - currentRotation) * 0.1;
+            currentPitch += (targetPitch - currentPitch) * 0.1;
+            chairGroup.rotation.y = currentRotation;
+            chairGroup.rotation.x = currentPitch;
+            chairGroup.position.y = -1.5 + Math.sin(time * 0.5) * 0.05;
+
+            // Code symbols
+            const speedMult = isHoveringChair ? 1.5 : 1;
+            codeSymbols.forEach((symbol, i) => {
+                const d = symbol.userData;
+                const newAngle = d.angle + time * d.speed * 0.2 * speedMult;
+                symbol.position.x = Math.sin(newAngle) * d.radius;
+                symbol.position.z = Math.cos(newAngle) * d.radius;
+                symbol.position.y = d.baseHeight + Math.sin(time * d.speed + d.floatOffset) * 0.3;
+                symbol.material.opacity = 0.4 + Math.sin(time * 2 + i) * 0.2;
+            });
+
+            chairRenderer.render(chairScene, chairCamera);
+        }
+        animate();
+    </script>
+</body>
+
+</html>
