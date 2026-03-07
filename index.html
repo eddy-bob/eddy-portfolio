@@ -1083,6 +1083,180 @@
             fill: currentColor;
         }
 
+        /* Projects Section */
+        .projects-section {
+            background: var(--bg-primary);
+        }
+
+        .projects-header {
+            text-align: center;
+            max-width: 720px;
+            margin: 0 auto 4rem;
+        }
+
+        .projects-header h2 {
+            font-size: clamp(2rem, 4vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .projects-header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            line-height: 1.7;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto 4rem;
+        }
+
+        .project-card {
+            display: block;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.75rem;
+            backdrop-filter: blur(20px);
+            text-decoration: none;
+            color: inherit;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--gradient-1);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.4s ease;
+        }
+
+        .project-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(34, 211, 238, 0.25);
+            box-shadow: 0 24px 48px var(--shadow-color), 0 0 0 1px rgba(34, 211, 238, 0.1);
+        }
+
+        .project-card:hover::before {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+
+        .project-card:active {
+            transform: translateY(-4px);
+        }
+
+        .project-card-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .project-card h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.3;
+            flex: 1;
+        }
+
+        .project-card-icon {
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
+            border-radius: 10px;
+            background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            transition: all 0.3s ease;
+        }
+
+        .project-card:hover .project-card-icon {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .project-card-icon svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .project-card p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .project-card-tag {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent);
+        }
+
+        .projects-cta {
+            text-align: center;
+            padding: 2.5rem 2rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        .projects-cta p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .projects-cta-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .projects-cta-links a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 100px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .projects-cta-links a:hover {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
         /* Contact Section */
         .contact {
             text-align: center;
@@ -1292,6 +1466,10 @@
             }
 
             .cv-grid {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            }
+
+            .projects-grid {
                 grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             }
         }
@@ -1506,6 +1684,20 @@
                 font-size: 0.7rem;
             }
 
+            /* Projects Section Mobile */
+            .projects-grid {
+                grid-template-columns: 1fr;
+                gap: 1.25rem;
+            }
+
+            .projects-cta {
+                padding: 1.75rem 1.25rem;
+            }
+
+            .projects-cta-links {
+                flex-direction: column;
+            }
+
             /* Contact Section Mobile */
             .contact h2 {
                 font-size: clamp(1.8rem, 8vw, 3.5rem);
@@ -1630,6 +1822,7 @@
             <li><a href="#about">About</a></li>
             <li><a href="#skills">Skills</a></li>
             <li><a href="#experience">Experience</a></li>
+            <li><a href="#projects">Projects</a></li>
             <li><a href="#cv">Resume</a></li>
             <li><a href="#contact">Contact</a></li>
         </ul>
@@ -1941,6 +2134,103 @@
         </div>
     </section>
 
+    <section id="projects" class="projects-section">
+        <div class="projects-header reveal">
+            <div class="section-label">Selected Work</div>
+            <h2>Projects I've built & shipped</h2>
+            <p>A mix of products, platforms, and tools — from fintech and e-commerce to creative tools and open source.</p>
+        </div>
+        <div class="projects-grid">
+            <a href="https://eddytechacademy.org/" target="_blank" rel="noopener noreferrer" class="project-card reveal">
+                <div class="project-card-head">
+                    <h3>Eddy Tech Academy</h3>
+                    <span class="project-card-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+                    </span>
+                </div>
+                <p>Learning platform to help people gain in-demand skills and get hired. Courses and mentorship.</p>
+                <span class="project-card-tag">Education · Platform</span>
+            </a>
+            <a href="https://www.macbeyland.com.ng/" target="_blank" rel="noopener noreferrer" class="project-card reveal">
+                <div class="project-card-head">
+                    <h3>Macbeyland</h3>
+                    <span class="project-card-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+                    </span>
+                </div>
+                <p>Premium tech & gadgets e-commerce. Phones, laptops, chargers — secure checkout, fast delivery across Nigeria.</p>
+                <span class="project-card-tag">E-commerce</span>
+            </a>
+            <a href="https://app.getendow.com" target="_blank" rel="noopener noreferrer" class="project-card reveal">
+                <div class="project-card-head">
+                    <h3>GetEndow</h3>
+                    <span class="project-card-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+                    </span>
+                </div>
+                <p>Fintech app — wallets, savings, and smart money management with high-throughput, reliable systems.</p>
+                <span class="project-card-tag">Fintech · App</span>
+            </a>
+            <a href="https://partner.getendow.com" target="_blank" rel="noopener noreferrer" class="project-card reveal">
+                <div class="project-card-head">
+                    <h3>GetEndow Partner</h3>
+                    <span class="project-card-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+                    </span>
+                </div>
+                <p>B2B partner platform with secure API, environment isolation, and partner onboarding.</p>
+                <span class="project-card-tag">Fintech · B2B</span>
+            </a>
+            <a href="https://the-video-editor.vercel.app/" target="_blank" rel="noopener noreferrer" class="project-card reveal">
+                <div class="project-card-head">
+                    <h3>THEVIDEOEDITOR</h3>
+                    <span class="project-card-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+                    </span>
+                </div>
+                <p>Creative video editing portfolio — stories for brands, creators, and events. Every frame tells a story.</p>
+                <span class="project-card-tag">Portfolio · Video</span>
+            </a>
+            <a href="https://www.yourbuzzz.com/" target="_blank" rel="noopener noreferrer" class="project-card reveal">
+                <div class="project-card-head">
+                    <h3>YourBuzzz</h3>
+                    <span class="project-card-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+                    </span>
+                </div>
+                <p>Creator-commerce platform — wallets, orders, payouts, and merchandise for creators.</p>
+                <span class="project-card-tag">Creator · Commerce</span>
+            </a>
+            <a href="https://www.design.yourbuzzz.com/" target="_blank" rel="noopener noreferrer" class="project-card reveal">
+                <div class="project-card-head">
+                    <h3>Buzzz Design</h3>
+                    <span class="project-card-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+                    </span>
+                </div>
+                <p>3D merchandise designer — customize products with text, cliparts, and templates. Built with Fabric.js & Three.js.</p>
+                <span class="project-card-tag">Design · Tool</span>
+            </a>
+            <a href="https://www.npmjs.com/package/merch-design-enhancer?activeTab=readme" target="_blank" rel="noopener noreferrer" class="project-card reveal">
+                <div class="project-card-head">
+                    <h3>merch-design-enhancer</h3>
+                    <span class="project-card-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+                    </span>
+                </div>
+                <p>Open-source NPM package to enhance merchandise design workflows and canvas operations.</p>
+                <span class="project-card-tag">NPM · Open Source</span>
+            </a>
+        </div>
+        <div class="projects-cta reveal">
+            <p>Want to see more? I’ve got more projects and case studies — reach me via email or WhatsApp and I’ll share.</p>
+            <div class="projects-cta-links">
+                <a href="mailto:eddymadu90@gmail.com">Email</a>
+                <a href="https://wa.me/2349075219854" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+            </div>
+        </div>
+    </section>
+
     <section id="contact" class="contact">
         <div class="reveal">
             <div class="section-label">Get in Touch</div>
@@ -2008,7 +2298,7 @@
             cursorDot.style.top = e.clientY - 3 + 'px';
         });
 
-        const hoverElements = document.querySelectorAll('a, button, .skill-tag, .cv-card');
+        const hoverElements = document.querySelectorAll('a, button, .skill-tag, .cv-card, .project-card');
         hoverElements.forEach(el => {
             el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
             el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
